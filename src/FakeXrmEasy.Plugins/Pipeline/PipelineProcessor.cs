@@ -214,6 +214,7 @@ namespace FakeXrmEasy.Pipeline
                 pluginContext.OutputParameters = parameters.Response != null ? parameters.Response.Results : new ParameterCollection();
                 pluginContext.PreEntityImages = GetEntityImageCollection(preImageDefinitions, parameters.PreEntitySnapshot);
                 pluginContext.PostEntityImages = GetEntityImageCollection(postImageDefinitions, parameters.PostEntitySnapshot);
+                pluginContext.SharedVariables = parameters.SharedVariables;
                 pluginContext.Depth = 1;
                 
                 if (parameters.Scope != null)

@@ -46,6 +46,11 @@ namespace FakeXrmEasy.Pipeline
         /// The current event pipeline scope
         /// </summary>
         internal EventPipelineScope Scope { get; set; }
+
+        /// <summary>
+        /// Shared variables for the pipeline execution
+        /// </summary>
+        internal ParameterCollection SharedVariables { get; set; } = new ParameterCollection();
         
         /// <summary>
         /// Converts the current bulk operation pipeline request parameters into an array of multiple non-bulk operation pipeline execution parameters 
