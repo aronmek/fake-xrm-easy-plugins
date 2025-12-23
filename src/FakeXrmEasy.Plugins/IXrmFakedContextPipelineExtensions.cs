@@ -16,6 +16,22 @@ namespace FakeXrmEasy.Pipeline
     public static class IXrmFakedContextPipelineExtensions
     {
         /// <summary>
+        /// Registers a new plugin againts the specified plugin type with the plugin step definition details provided
+        /// 
+        /// All the other remaining settings in the plugin definition parameter will be used for registration.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="pluginType">The type of the plugin to register</param>
+        /// <param name="pluginStepDefinition">Info about the details of the plugin registration</param>
+        /// <returns></returns>
+        public static Guid RegisterPluginStep(this IXrmFakedContext context,
+                                            Type pluginType,
+                                            IPluginStepDefinition pluginStepDefinition)
+        {
+            return PluginStepRegistrationManager.RegisterPluginStepInternal(context, pluginType, pluginStepDefinition);
+        }
+
+        /// <summary>
         /// Registers a new plugin againts the specified plugin with the plugin step definition details provided
         /// When using this method the plugin class specified in the method signature will be used instead of the assembly and plugin
         /// types provided in the plugin step definition parameter.

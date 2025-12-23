@@ -41,6 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestContextPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPropertiesPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestSharedVariablesPropertyPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TagParameterPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TracerPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ValidatePipelinePlugin.cs" />
   </ItemGroup>

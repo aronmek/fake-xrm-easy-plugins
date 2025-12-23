@@ -215,6 +215,14 @@ namespace FakeXrmEasy.Pipeline
                 pluginContext.PreEntityImages = GetEntityImageCollection(preImageDefinitions, parameters.PreEntitySnapshot);
                 pluginContext.PostEntityImages = GetEntityImageCollection(postImageDefinitions, parameters.PostEntitySnapshot);
                 pluginContext.SharedVariables = parameters.SharedVariables;
+
+                // Fix for TagPromoterPlugin:
+                // If the request has a "tag" parameter, it should be available in SharedVariables
+                if (pluginContext.InputParameters.ContainsKey("tag") && !pluginContext.SharedVariables.ContainsKey("tag"))
+                {
+                    pluginContext.SharedVariables.Add("tag", pluginContext.InputParameters["tag"]);
+                }
+                
                 pluginContext.Depth = 1;
                 
                 if (parameters.Scope != null)
