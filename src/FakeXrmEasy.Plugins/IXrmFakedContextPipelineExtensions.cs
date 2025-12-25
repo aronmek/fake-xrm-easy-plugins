@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using FakeXrmEasy.Abstractions;
 using FakeXrmEasy.Abstractions.Plugins.Enums;
 using Microsoft.Xrm.Sdk;
@@ -7,6 +8,7 @@ using FakeXrmEasy.Plugins.PluginImages;
 using FakeXrmEasy.Plugins.PluginSteps;
 using FakeXrmEasy.Plugins.PluginSteps.InvalidRegistrationExceptions;
 using FakeXrmEasy.Plugins.Definitions;
+using FakeXrmEasy.Plugins.Pipeline;
 
 namespace FakeXrmEasy.Pipeline
 {
@@ -15,6 +17,34 @@ namespace FakeXrmEasy.Pipeline
     /// </summary>
     public static class IXrmFakedContextPipelineExtensions
     {
+        /// <summary>
+        /// Registers all plugins from the specified assembly using the registered IPluginStepConfigProvider
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="assembly"></param>
+        public static void RegisterPluginsFromAssembly(this IXrmFakedContext context, Assembly assembly)
+        {
+            var configProvider = context.GetProperty<IPluginStepConfigProvider>();
+            if (configProvider == null)
+            {
+                throw new InvalidOperationException("No IPluginStepConfigProvider has been registered in the context. Please register one using context.SetProperty<IPluginStepConfigProvider>(provider) before calling RegisterPluginsFromAssembly.");
+            }
+
+            context.RegisterPluginsFromAssembly(assembly, configProvider);
+        }
+
+        /// <summary>
+        /// Registers all plugins from the specified assembly using the provided IPluginStepConfigProvider
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="assembly"></param>
+        /// <param name="configProvider"></param>
+        public static void RegisterPluginsFromAssembly(this IXrmFakedContext context, Assembly assembly, IPluginStepConfigProvider configProvider)
+        {
+            var scanner = new PluginAssemblyScanner(configProvider);
+            scanner.RegisterPluginsFromAssembly(context, assembly);
+        }
+
         /// <summary>
         /// Registers a new plugin againts the specified plugin type with the plugin step definition details provided
         /// 
