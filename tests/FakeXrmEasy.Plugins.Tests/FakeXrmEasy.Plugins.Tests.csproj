@@ -113,12 +113,17 @@
     <ProjectReference Include="..\DataverseEntitiesWithPartialPipelineTypes\DataverseEntitiesWithPartialPipelineTypes.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(PackTests)' == ''">
+  <ItemGroup>
     <ProjectReference Include="..\..\src\FakeXrmEasy.Plugins\FakeXrmEasy.Plugins.csproj" />
     <ProjectReference Include="..\FakeXrmEasy.Tests.PluginsForTesting\FakeXrmEasy.Tests.PluginsForTesting.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(PackTests)' == 'true' And '$(Configuration)'=='FAKE_XRM_EASY'">
+  <!-- <ItemGroup Condition="'$(PackTests)' == ''">
+    <ProjectReference Include="..\..\src\FakeXrmEasy.Plugins\FakeXrmEasy.Plugins.csproj" />
+    <ProjectReference Include="..\FakeXrmEasy.Tests.PluginsForTesting\FakeXrmEasy.Tests.PluginsForTesting.csproj" />
+  </ItemGroup> -->
+
+  <!-- <ItemGroup Condition="'$(PackTests)' == 'true' And '$(Configuration)'=='FAKE_XRM_EASY'">
     <PackageReference Include="FakeXrmEasy.Abstractions.v2011" Version="[2.6.0-*,3.0)" />
     <PackageReference Include="FakeXrmEasy.Core.v2011" Version="[2.7.0-*,3.0)" />
     <PackageReference Include="FakeXrmEasy.Plugins.v2011" Version="[2.8.1-*,3.0)" />
@@ -166,5 +171,5 @@
     <PackageReference Include="FakeXrmEasy.Plugins.v9" Version="[2.8.1-*,3.0)" />
     <PackageReference Include="FakeXrmEasy.Messages.v9" Version="[2.7.0-*,3.0)" />
     <PackageReference Include="FakeXrmEasy.Tests.PluginsForTesting.v9" Version="[2.7.0-*,3.0)" />
-  </ItemGroup>
+  </ItemGroup> -->
 </Project>
