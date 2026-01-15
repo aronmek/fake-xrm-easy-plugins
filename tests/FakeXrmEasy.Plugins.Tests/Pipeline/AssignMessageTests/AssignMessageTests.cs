@@ -48,7 +48,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.AssignMessageTests
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_assign_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_assign_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -64,6 +64,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.AssignMessageTests
             });
             
             var response = _service.Execute(_request);
+            if(mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<AssignResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();
@@ -83,7 +88,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.AssignMessageTests
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_pass_preimage_when_there_is_a_registered_preimage(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_pass_preimage_when_there_is_a_registered_preimage(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             string registeredPreImageName = "PreImage";
             PluginImageDefinition preImageDefinition = new PluginImageDefinition(registeredPreImageName, ProcessingStepImageType.PreImage);
@@ -107,6 +112,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.AssignMessageTests
             
             //Act
             var response = _service.Execute(_request);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<AssignResponse>(response);
 
             //Assert

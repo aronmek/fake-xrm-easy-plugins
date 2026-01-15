@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using FakeXrmEasy.Abstractions;
 using FakeXrmEasy.Abstractions.Plugins.Enums;
 using Microsoft.Xrm.Sdk;
@@ -200,6 +201,21 @@ namespace FakeXrmEasy.Pipeline
             };
 
             return PluginStepRegistrationManager.RegisterPluginStepInternal<TPlugin>(context, pluginStepDefinition);
+        }
+
+        /// <summary>
+        /// Waits for all async tasks initiated by the pipeline execution to complete.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="timeout">The maximum time to wait.</param>
+        /// <returns>A task representing the wait operation.</returns>
+        public static async Task WaitForAsyncPluginsAsync(this IXrmFakedContext context, TimeSpan timeout)
+        {
+            if (context.HasProperty<IAsyncPluginBackgroundTaskManager>())
+            {
+                var manager = context.GetProperty<IAsyncPluginBackgroundTaskManager>();
+                await manager.WaitForAllAsync(timeout);
+            }
         }
     }
 }

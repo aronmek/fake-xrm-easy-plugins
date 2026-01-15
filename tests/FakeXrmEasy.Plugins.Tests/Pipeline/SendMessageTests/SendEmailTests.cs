@@ -45,7 +45,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_send_email_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_send_email_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -58,6 +58,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
             _context.Initialize(_email);
             
             var response = _service.Execute(_sendEmailRequest);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<SendEmailResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();
@@ -78,7 +83,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_update_email_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_update_email_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -91,6 +96,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
             _context.Initialize(_email);
             
             var response = _service.Execute(_sendEmailRequest);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<SendEmailResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();
@@ -110,7 +120,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_pass_preimage_when_there_is_a_registered_preimage(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_pass_preimage_when_there_is_a_registered_preimage(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             string registeredPreImageName = "PreImage";
             PluginImageDefinition preImageDefinition = new PluginImageDefinition(registeredPreImageName, ProcessingStepImageType.PreImage);
@@ -134,6 +144,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
             
             //Act
             var response = _service.Execute(_sendEmailRequest);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<SendEmailResponse>(response);
 
             //Assert

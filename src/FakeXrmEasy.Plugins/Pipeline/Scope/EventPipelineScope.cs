@@ -8,7 +8,7 @@ namespace FakeXrmEasy.Pipeline.Scope
     /// It uses a different naming convention 'Scope' as opposed to 'Context'  to avoid confusion with existing plugin execution context naming conventions.
     /// Think of it as kind of a function 'scope', like a reference to a specific call stack
     /// </summary>
-    internal class EventPipelineScope
+    public class EventPipelineScope
     {
         /// <summary>
         /// The current plugin execution context that is being executed

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Crm;
 using FakeXrmEasy.Abstractions;
 using FakeXrmEasy.Abstractions.Enums;
@@ -114,7 +115,7 @@ namespace FakeXrmEasy.Plugins.Tests.Issues
         [Theory]
         [InlineData(ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepMode.Asynchronous)]
-        public void follow_on_plugin_should_be_called_by_pipeline_simulation(ProcessingStepMode followingPluginMode)
+        public async System.Threading.Tasks.Task follow_on_plugin_should_be_called_by_pipeline_simulation(ProcessingStepMode followingPluginMode)
         {
             // arrange
 
@@ -138,6 +139,11 @@ namespace FakeXrmEasy.Plugins.Tests.Issues
 
             // act
             _service.Execute(request);
+
+            if(followingPluginMode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
 
             // assert
 

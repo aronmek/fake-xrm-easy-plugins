@@ -40,7 +40,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_registered_bulk_step(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_registered_bulk_step(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -51,6 +51,10 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
             });
 
             var response = _service.Execute(_entities.ToCreateMultipleRequest());
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
             Assert.IsType<CreateMultipleResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();
@@ -70,7 +74,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_registered_bulk_step_and_then_single_step_if_both_are_registered(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_registered_bulk_step_and_then_single_step_if_both_are_registered(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -89,6 +93,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
             });
             
             var response = _service.Execute(_entities.ToCreateMultipleRequest());
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<CreateMultipleResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();
@@ -96,17 +105,34 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
 
             Assert.Equal(2, auditedSteps.Count);
 
-            var bulkAuditedStep = auditedSteps[0];
-            Assert.Equal("CreateMultiple", bulkAuditedStep.MessageName);
-            Assert.Equal(typeof(TracerPlugin), bulkAuditedStep.PluginAssemblyType);
-            Assert.Equal(stage, bulkAuditedStep.Stage);
-            Assert.Equal(mode, bulkAuditedStep.Mode);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                var bulkAuditedStep = auditedSteps.FirstOrDefault(s => s.MessageName == "CreateMultiple");
+                Assert.NotNull(bulkAuditedStep);
+                Assert.Equal(typeof(TracerPlugin), bulkAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, bulkAuditedStep.Stage);
+                Assert.Equal(mode, bulkAuditedStep.Mode);
+
+                var singleAuditedStep = auditedSteps.FirstOrDefault(s => s.MessageName == "Create");
+                Assert.NotNull(singleAuditedStep);
+                Assert.Equal(typeof(TracerPlugin), singleAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, singleAuditedStep.Stage);
+                Assert.Equal(mode, singleAuditedStep.Mode);
+            }
+            else
+            {
+                var bulkAuditedStep = auditedSteps[0];
+                Assert.Equal("CreateMultiple", bulkAuditedStep.MessageName);
+                Assert.Equal(typeof(TracerPlugin), bulkAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, bulkAuditedStep.Stage);
+                Assert.Equal(mode, bulkAuditedStep.Mode);
             
-            var singleAuditedStep = auditedSteps[1];
-            Assert.Equal("Create", singleAuditedStep.MessageName);
-            Assert.Equal(typeof(TracerPlugin), singleAuditedStep.PluginAssemblyType);
-            Assert.Equal(stage, singleAuditedStep.Stage);
-            Assert.Equal(mode, singleAuditedStep.Mode);
+                var singleAuditedStep = auditedSteps[1];
+                Assert.Equal("Create", singleAuditedStep.MessageName);
+                Assert.Equal(typeof(TracerPlugin), singleAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, singleAuditedStep.Stage);
+                Assert.Equal(mode, singleAuditedStep.Mode);
+            }
         }
         
         [Theory]
@@ -114,7 +140,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_registered_single_step_and_then_bulk_step_if_both_are_registered(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_registered_single_step_and_then_bulk_step_if_both_are_registered(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -133,6 +159,10 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
             });
             
             var response = _service.Execute(new CreateRequest() { Target = _account });
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
             Assert.IsType<CreateResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();
@@ -140,17 +170,34 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.BulkOperations
 
             Assert.Equal(2, auditedSteps.Count);
 
-            var bulkAuditedStep = auditedSteps[0];
-            Assert.Equal("Create", bulkAuditedStep.MessageName);
-            Assert.Equal(typeof(TracerPlugin), bulkAuditedStep.PluginAssemblyType);
-            Assert.Equal(stage, bulkAuditedStep.Stage);
-            Assert.Equal(mode, bulkAuditedStep.Mode);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                var bulkAuditedStep = auditedSteps.FirstOrDefault(s => s.MessageName == "Create");
+                Assert.NotNull(bulkAuditedStep);
+                Assert.Equal(typeof(TracerPlugin), bulkAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, bulkAuditedStep.Stage);
+                Assert.Equal(mode, bulkAuditedStep.Mode);
+
+                var singleAuditedStep = auditedSteps.FirstOrDefault(s => s.MessageName == "CreateMultiple");
+                Assert.NotNull(singleAuditedStep);
+                Assert.Equal(typeof(TracerPlugin), singleAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, singleAuditedStep.Stage);
+                Assert.Equal(mode, singleAuditedStep.Mode);
+            }
+            else
+            {
+                var bulkAuditedStep = auditedSteps[0];
+                Assert.Equal("Create", bulkAuditedStep.MessageName);
+                Assert.Equal(typeof(TracerPlugin), bulkAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, bulkAuditedStep.Stage);
+                Assert.Equal(mode, bulkAuditedStep.Mode);
             
-            var singleAuditedStep = auditedSteps[1];
-            Assert.Equal("CreateMultiple", singleAuditedStep.MessageName);
-            Assert.Equal(typeof(TracerPlugin), singleAuditedStep.PluginAssemblyType);
-            Assert.Equal(stage, singleAuditedStep.Stage);
-            Assert.Equal(mode, singleAuditedStep.Mode);
+                var singleAuditedStep = auditedSteps[1];
+                Assert.Equal("CreateMultiple", singleAuditedStep.MessageName);
+                Assert.Equal(typeof(TracerPlugin), singleAuditedStep.PluginAssemblyType);
+                Assert.Equal(stage, singleAuditedStep.Stage);
+                Assert.Equal(mode, singleAuditedStep.Mode);
+            }
         }
         
     }

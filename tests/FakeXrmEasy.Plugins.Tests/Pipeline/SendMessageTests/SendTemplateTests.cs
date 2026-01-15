@@ -85,7 +85,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_send_template_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_send_template_plugin(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -113,6 +113,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
             };
             
             var response = _service.Execute(_request);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<SendTemplateResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();
@@ -133,7 +138,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
         [InlineData(ProcessingStepStage.Preoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Synchronous)]
         [InlineData(ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous)]
-        public void Should_trigger_update_email_plugin_twice_one_for_each_recipient(ProcessingStepStage stage, ProcessingStepMode mode)
+        public async System.Threading.Tasks.Task Should_trigger_update_email_plugin_twice_one_for_each_recipient(ProcessingStepStage stage, ProcessingStepMode mode)
         {
             _context.RegisterPluginStep<TracerPlugin>(new PluginStepDefinition()
             {
@@ -160,6 +165,11 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline.SendMessageTests
             };
             
             var response = _service.Execute(_request);
+            if (mode == ProcessingStepMode.Asynchronous)
+            {
+                await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
+            }
+
             Assert.IsType<SendTemplateResponse>(response);
             
             var pluginStepAudit = _context.GetPluginStepAudit();

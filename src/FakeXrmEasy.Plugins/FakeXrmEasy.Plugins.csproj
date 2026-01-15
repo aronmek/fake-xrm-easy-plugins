@@ -10,6 +10,7 @@
     <PackageId>FakeXrmEasy.Plugins</PackageId>
     <PackageId Condition="'$(Configuration)'=='FAKE_XRM_EASY_9' Or '$(Configuration)'=='Debug'">FakeXrmEasy.Plugins.v9</PackageId>
     <VersionPrefix>2.8.1</VersionPrefix>
+    <VersionSuffix>chorus.8</VersionSuffix>
     <Authors>Jordi Montaña</Authors>
     <Company>Dynamics Value</Company>
     <Title>FakeXrmEasy Plugins</Title>

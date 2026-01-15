@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using DataverseEntities;
 using FakeXrmEasy.Tests.PluginsForTesting;
 using Microsoft.Xrm.Sdk;
@@ -117,7 +118,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline
         }
 
         [Fact]
-        public void When_PluginStepRegisteredAsDeletePostOperationAsyncronous_Expect_CorrectValues()
+        public async System.Threading.Tasks.Task When_PluginStepRegisteredAsDeletePostOperationAsyncronous_Expect_CorrectValues()
         {
             // Arange
             _context.Initialize(_contact);
@@ -126,6 +127,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline
             _context.RegisterPluginStep<ValidatePipelinePlugin, Contact>("Delete", ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous);
 
             _service.Delete(Contact.EntityLogicalName, _contact.Id);
+            await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
 
             // Assert
             var tracingService = _context.GetTracingService();
@@ -192,7 +194,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline
         }
 
         [Fact]
-        public void Should_trigger_plugin_registered_on_async_update_postoperation()
+        public async System.Threading.Tasks.Task Should_trigger_plugin_registered_on_async_update_postoperation()
         {
             // Arange
             _context.Initialize(_contact);
@@ -205,6 +207,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline
             };
 
             _service.Update(updatedEntity);
+            await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
 
             // Assert
             var trace = _context.GetTracingService().DumpTrace().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
@@ -258,13 +261,14 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline
         }
 
         [Fact]
-        public void Should_trigger_plugin_in_the_post_operation_stage_async_when_plugin_step_is_registered()
+        public async System.Threading.Tasks.Task Should_trigger_plugin_in_the_post_operation_stage_async_when_plugin_step_is_registered()
         {
             // Arange
             _context.RegisterPluginStep<ValidatePipelinePlugin, Contact>("Create", ProcessingStepStage.Postoperation, ProcessingStepMode.Asynchronous);
 
             // Act
             _service.Create(_contact);
+            await _context.WaitForAsyncPluginsAsync(TimeSpan.FromSeconds(1));
 
             // Assert
             var trace = _context.GetTracingService().DumpTrace().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
@@ -437,7 +441,7 @@ namespace FakeXrmEasy.Plugins.Tests.Pipeline
             var accountId = _service.Create(target);
 
             // Assert
-            var task = _context.CreateQuery<Task>().FirstOrDefault();
+            var task = _context.CreateQuery<DataverseEntities.Task>().FirstOrDefault();
             Assert.NotNull(task.RegardingObjectId);
             Assert.Equal(accountId, task.RegardingObjectId.Id); 
         }

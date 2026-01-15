@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using FakeXrmEasy.Abstractions;
 using FakeXrmEasy.Abstractions.Middleware;
 using FakeXrmEasy.Abstractions.Plugins.Enums;
@@ -250,7 +251,21 @@ namespace FakeXrmEasy.Pipeline
                 newScope.PluginContextProperties = new XrmFakedPluginContextProperties(context,
                     pipelineOrganizationService, context.GetTracingService());
                 
-                ExecutePlugin(context, pluginStep, newScope, isAuditEnabled);
+                if (pluginStep.Mode == ProcessingStepMode.Asynchronous)
+                {
+                    if (!context.HasProperty<IAsyncPluginBackgroundTaskManager>())
+                    {
+                        context.SetProperty<IAsyncPluginBackgroundTaskManager>(new AsyncPluginBackgroundTaskManager());
+                    }
+                    var manager = context.GetProperty<IAsyncPluginBackgroundTaskManager>();
+                    
+                    var task = Task.Run(() => ExecutePlugin(context, pluginStep, newScope, isAuditEnabled));
+                    manager.AddTask(task);
+                }
+                else
+                {
+                    ExecutePlugin(context, pluginStep, newScope, isAuditEnabled);
+                }
             }
         }
         
@@ -305,6 +320,14 @@ namespace FakeXrmEasy.Pipeline
         {
             var pluginMethod = GetPluginMethod(pluginStepDefinition);
             
+            IPipelineEvents pipelineEvents = null;
+            if (context.HasProperty<IPipelineEvents>())
+            {
+                pipelineEvents = context.GetProperty<IPipelineEvents>();
+            }
+
+            pipelineEvents?.RaiseOnPluginStepStart(context, pluginStepDefinition, scope);
+
             try
             {
                 InvokePluginMethod(pluginMethod, pluginStepDefinition, scope);
@@ -312,6 +335,10 @@ namespace FakeXrmEasy.Pipeline
             catch (TargetInvocationException ex)
             {
                 throw ex.InnerException;
+            }
+            finally
+            {
+                pipelineEvents?.RaiseOnPluginStepEnd(context, pluginStepDefinition, scope);
             }
             
             if (isAuditEnabled)
