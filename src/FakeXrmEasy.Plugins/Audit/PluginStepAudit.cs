@@ -37,7 +37,10 @@ namespace FakeXrmEasy.Plugins.Audit
         /// <returns></returns>
         public IQueryable<PluginStepAuditDetails> CreateQuery()
         {
-            return _audit.AsQueryable();
+            lock (_audit)
+            {
+                return _audit.ToList().AsQueryable();
+            }
         }
 
         /// <summary>
@@ -47,7 +50,10 @@ namespace FakeXrmEasy.Plugins.Audit
         internal void Add(PluginStepAuditDetails details)
         {
             details.ExecutedOn = DateTime.UtcNow;
-            _audit.Add(details);
+            lock (_audit)
+            {
+                _audit.Add(details);
+            }
         }
     }
 }

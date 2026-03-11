@@ -101,10 +101,23 @@ namespace FakeXrmEasy.Pipeline
             {
                 scope = pipelineOrganizationRequest.CurrentScope;
             }
+
+            var originalRequest = pipelineOrganizationRequest != null ? pipelineOrganizationRequest.OriginalRequest : request;
+
+            // This ensures that any early bound entity passed in the request is converted to a late bound entity
+            // This is necessary because the pipeline simulation might be running in a context (e.g. plugins) 
+            // where the early bound type is not available or different (e.g. shared projects)
+            if (originalRequest.Parameters.ContainsKey("Target") && originalRequest.Parameters["Target"] is Entity targetEntity)
+            {
+                if (targetEntity.GetType() != typeof(Entity))
+                {
+                    originalRequest.Parameters["Target"] = targetEntity.ToEntity<Entity>();
+                }
+            }
             
             return new PipelineStageExecutionParameters()
             {
-                Request = pipelineOrganizationRequest != null ? pipelineOrganizationRequest.OriginalRequest : request,
+                Request = originalRequest,
                 Scope = scope
             };
         }

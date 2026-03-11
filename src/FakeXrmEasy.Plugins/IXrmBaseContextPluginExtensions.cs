@@ -4,6 +4,7 @@ using Microsoft.Xrm.Sdk;
 using FakeItEasy;
 using FakeXrmEasy.Abstractions.Plugins;
 using System.Linq;
+using FakeXrmEasy.Plugins.Services;
 
 namespace FakeXrmEasy.Plugins
 {
@@ -48,7 +49,13 @@ namespace FakeXrmEasy.Plugins
         {
             if(context.PluginContextProperties == null) 
             {
-                context.PluginContextProperties = new XrmFakedPluginContextProperties(context, context.GetOrganizationService(), context.GetTracingService());
+                var service = context.GetOrganizationService();
+                if (context is XrmFakedContext fakedContext && fakedContext.ProxyTypesAssemblies.Any())
+                {
+                    service = new ProxyTypesOrganizationService(service, fakedContext.ProxyTypesAssemblies);
+                }
+
+                context.PluginContextProperties = new XrmFakedPluginContextProperties(context, service, context.GetTracingService());
             }
             return context.PluginContextProperties;
         }

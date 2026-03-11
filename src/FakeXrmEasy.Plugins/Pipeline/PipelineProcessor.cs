@@ -17,7 +17,9 @@ using FakeXrmEasy.Plugins.PluginImages;
 using FakeXrmEasy.Plugins.PluginSteps;
 using FakeXrmEasy.Plugins.PluginSteps.Extensions;
 using FakeXrmEasy.Plugins.PluginSteps.PluginStepRegistrationFieldNames;
+using FakeXrmEasy.Plugins.Services;
 using Microsoft.Xrm.Sdk;
+using FakeXrmEasy.Plugins.Pipeline;
 
 namespace FakeXrmEasy.Pipeline
 {
@@ -244,8 +246,40 @@ namespace FakeXrmEasy.Pipeline
                     PluginContext = pluginContext
                 };
                 
+                // Get the plugin's assembly to use for proxy type conversions
+                Assembly pluginAssembly = null;
+                if (!string.IsNullOrEmpty(pluginStep.AssemblyName))
+                {
+                    try
+                    {
+                        pluginAssembly = AppDomain.CurrentDomain.Load(pluginStep.AssemblyName);
+                    }
+                    catch
+                    {
+                        // If loading fails, fall back to context assemblies
+                        pluginAssembly = null;
+                    }
+                }
+
+                
+                IOrganizationService service = null;
+                if (pluginAssembly != null)
+                {
+                    service = context.GetOrganizationService(pluginAssembly);
+                }
+                else 
+                {
+                    service = context.GetOrganizationService();
+                
+                    if (context is XrmFakedContext fakedContext && fakedContext.ProxyTypesAssemblies.Any())
+                    {
+                        // Fall back to context assemblies if plugin assembly not available
+                        service = new ProxyTypesOrganizationService(service, fakedContext.ProxyTypesAssemblies);
+                    }
+                }
+                
                 var pipelineOrganizationService =
-                    PipelineOrganizationServiceFactory.New(context.GetOrganizationService(),
+                    PipelineOrganizationServiceFactory.New(service,
                         newScope);
 
                 newScope.PluginContextProperties = new XrmFakedPluginContextProperties(context,
